@@ -1,0 +1,19 @@
+language: go
+
+sudo: false
+
+go:
+  - "1.11.x"
+  - tip
+
+env:
+  - GO111MODULE=on
+
+install: true
+
+script:
+  - go test -v -cover -race -covermode=atomic -coverprofile=profile.cov ./...
+  - go run golang.org/x/lint/golint -min_confidence 0.0 -set_exit_status ./...
+
+after_success:
+  - go run github.com/mattn/goveralls -coverprofile=profile.cov -service=travis-ci
