@@ -38,26 +38,25 @@ func newFakeState(flag int) *fakeState {
 
 var _ = Describe("Error", func() {
 	Describe("error.New", func() {
-		Context("With valid ID (>=0), error cause and message", func() {
+		Context("With error cause and message", func() {
 			var err error
 
 			errCause := stderr.New("err")
-			errValidID := 0
 			errMessage := "error"
 
 			BeforeEach(func() {
-				err = New(errValidID, errCause, errMessage)
+				err = New(errCause, errMessage)
 			})
 
 			It("should fullfill error interface", func() {
 				Expect(err.Error()).To(ContainSubstring(
-					"%v (%d: %s)",
-					errCause.Error(), errValidID, errMessage,
+					"%v (%s)",
+					errCause.Error(), errMessage,
 				))
 			})
 
 			It("should fullfill fmt.Formatter interface", func() {
-				say := `#0: error`
+				say := `error`
 
 				formatter, ok := err.(fmt.Formatter)
 				Expect(ok).To(Equal(true))
@@ -98,10 +97,6 @@ var _ = Describe("Error", func() {
 				}
 			})
 
-			It("should work with ID", func() {
-				Expect(ID(err)).To(Equal(errValidID))
-			})
-
 			It("should work with Message", func() {
 				Expect(Message(err)).To(Equal(errMessage))
 			})
@@ -111,26 +106,21 @@ var _ = Describe("Error", func() {
 			})
 		})
 
-		Context("With valid ID (>=0), string cause and message", func() {
+		Context("With string cause and message", func() {
 			var err error
 
 			errCause := "err"
-			errValidID := 0
 			errMessage := "error"
 
 			BeforeEach(func() {
-				err = New(errValidID, errCause, errMessage)
+				err = New(errCause, errMessage)
 			})
 
 			It("should fullfill error interface", func() {
 				Expect(err.Error()).To(ContainSubstring(
-					"%v (%d: %s)",
-					errCause, errValidID, errMessage,
+					"%v (%s)",
+					errCause, errMessage,
 				))
-			})
-
-			It("should work with ID", func() {
-				Expect(ID(err)).To(Equal(errValidID))
 			})
 
 			It("should work with Message", func() {
@@ -142,23 +132,9 @@ var _ = Describe("Error", func() {
 			})
 		})
 
-		Context("Invalid ID (<0)", func() {
-			It("should panic", func() {
-				Expect(func() { New(-1, "", "") }).To(Panic())
-			})
-		})
-
 		Context("Invalid type of cause (not error or string)", func() {
 			It("should panic", func() {
-				Expect(func() { New(0, []byte{0x0}, "") }).To(Panic())
-			})
-		})
-	})
-
-	Describe("error.ID", func() {
-		Context("With a standard error", func() {
-			Specify("-1 integer is returned", func() {
-				Expect(ID(stderr.New("invalid error"))).To(Equal(-1))
+				Expect(func() { New([]byte{0x0}, "") }).To(Panic())
 			})
 		})
 	})

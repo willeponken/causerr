@@ -1,4 +1,4 @@
-// Package causerr implements errors with IDs, messages and stack trace.
+// Package causerr implements errors with messages and stack traces.
 package causerr
 
 import (
@@ -9,51 +9,44 @@ import (
 	"github.com/pkg/errors"
 )
 
-// causeError represents an error with ID and a message.
+// causeError represents an error and a message.
 type causeError struct {
 	err     error
-	ID      int    `json:"id"`
 	Message string `json:"message"`
 }
 
-// Error fullfills the error interface for printing error messages together with ID and
+// Error fullfills the error interface for printing error messages together with
 // messages from the causeError type.
 func (d *causeError) Error() string {
-	return fmt.Sprintf("%v (%d: %s)", d.err.Error(), d.ID, d.Message)
+	return fmt.Sprintf("%v (%s)", d.err.Error(), d.Message)
 }
 
-// Format fullfills the fmt.Formatter interface for pretty-printing the causeError type.
+// Format fullfills the fmt.Formatter interface for pretty-printing the
+// causeError type.
 func (d *causeError) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "#%d: %s\n%+v", d.ID, d.Message, d.err)
+			fmt.Fprintf(s, "%s\n%+v", d.Message, d.err)
 			return
 		}
 		fallthrough
 	case 's':
-		fmt.Fprintf(s, "#%d: %s\n%v", d.ID, d.Message, d.err)
+		fmt.Fprintf(s, "%s\n%v", d.Message, d.err)
 	case 'q':
-		fmt.Fprintf(s, "#%d: %s\n%q", d.ID, d.Message, d.err)
+		fmt.Fprintf(s, "%s\n%q", d.Message, d.err)
 	}
 }
 
-// New creates an error with ID, cause, message and stack trace.
+// New creates an error with cause, message and stack trace.
 //
 // The cause can be either an error or a string which will be used as
 // the internal error. If the cause is not any of the supported types it
 // will panic.
 //
-// The ID is an internal number to identify errors, it must be >=0, else
-// it will panic.
-//
 // The message is the external error that can be shown to non-developers.
-func New(id int, cause interface{}, message string) error {
+func New(cause interface{}, message string) error {
 	var err error
-
-	if id < 0 {
-		panic("id must be >=0")
-	}
 
 	switch cause.(type) {
 	case error:
@@ -66,7 +59,6 @@ func New(id int, cause interface{}, message string) error {
 
 	return &causeError{
 		err:     errors.WithStack(err),
-		ID:      id,
 		Message: message,
 	}
 }
@@ -79,17 +71,6 @@ func getCauseError(err error) (*causeError, bool) {
 	}
 
 	return nil, false
-}
-
-// ID takes an error and returns its ID.
-// If no ID could be found it'll return -1.
-func ID(err error) int {
-	def, ok := getCauseError(err)
-	if ok {
-		return def.ID
-	}
-
-	return -1
 }
 
 // Cause takes an error and returns its error cause.
