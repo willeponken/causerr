@@ -27,14 +27,14 @@ func (d *causeError) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%s\n%+v", d.Message, d.err)
+			fmt.Fprintf(s, "%s (%+v)", d.Message, d.err)
 			return
 		}
 		fallthrough
 	case 's':
-		fmt.Fprintf(s, "%s\n%v", d.Message, d.err)
+		fmt.Fprintf(s, "%s (%v)", d.Message, d.err)
 	case 'q':
-		fmt.Fprintf(s, "%s\n%q", d.Message, d.err)
+		fmt.Fprintf(s, "%s (%q)", d.Message, d.err)
 	}
 }
 
